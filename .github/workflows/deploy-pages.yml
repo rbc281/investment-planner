@@ -24,6 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check calculations and build offline copy
+        run: |
+          node test.cjs
+          python3 make-offline.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
