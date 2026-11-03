@@ -4,7 +4,7 @@ Implemented: grouped manager activity at manager.html; price first presented; st
 
 Backend: Supabase project ffqaowvgqdlncilifshc, organization SpokenFrame. Schema in database/schema.sql. Public configuration contains only a publishable key. Anonymous clients can append/read, cannot update/delete. Security advisors passed.
 
-Verified before interruption: calculations, tile cycling, privacy/queue retry tests; cross-tab price, apply, custom edit; removal confirmed in database. Next: finish live deployment and live smoke verification. GitHub previous main 988e4fae9b3d555c829bc6b9e6ecca924addcda9. Sites project appgprj_6ae938f305488191960f6ad52c030714.
+Verified before interruption: calculations, tile cycling, privacy/queue retry tests; cross-tab price, apply, custom edit; removal confirmed in database. Completed: GitHub Pages deployment succeeded and live browser verification confirmed $260/month on $20,000 financed; grouped activity, percent apply/remove, and a single first-presentation event across reload. Test-only sessions removed. No unfinished requirements. Implementation commit 1e1c5b56a8e47ab89629840b6ff62d79e6cd3eaa. Live: https://rbc281.github.io/investment-planner/ and manager.html. Sites project appgprj_6ae938f305488191960f6ad52c030714.
 
 Commands: node test.cjs; node activity-test.cjs; python3 make-offline.py.
 
