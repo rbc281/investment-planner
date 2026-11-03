@@ -27,6 +27,7 @@ jobs:
       - name: Check calculations and build offline copy
         run: |
           node test.cjs
+          node activity-test.cjs
           python3 make-offline.py
 
       - name: Configure Pages
