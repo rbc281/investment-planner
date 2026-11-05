@@ -40,3 +40,17 @@ render();Activity.status();void Activity.flush();if(!hasProject)openSetup(true);
 addEventListener('pagehide',()=>{for(const kind of ['dollars','percent'])if(state.custom[kind].active)commitCustom(kind);persist()});
 
 $('repInput').addEventListener('input',()=>{try{localStorage.setItem('planner-rep',$('repInput').value.trim())}catch{}});
+
+const signatureDialog=$('signatureDialog'),signatureCanvas=$('signatureCanvas'),signatureContext=signatureCanvas.getContext('2d');
+let signaturePointer=null,signatureHasInk=false;
+function clearSignature(){signatureContext.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);signaturePointer=null;signatureHasInk=false;$('saveSignature').disabled=true;$('signatureError').textContent=''}
+function signaturePoint(e){const r=signatureCanvas.getBoundingClientRect();return{x:(e.clientX-r.left)*signatureCanvas.width/r.width,y:(e.clientY-r.top)*signatureCanvas.height/r.height}}
+$('confirmInvestment').onclick=()=>{clearSignature();$('signatureCustomer').textContent=state.customer;signatureDialog.showModal()};
+$('closeSignature').onclick=()=>signatureDialog.close();
+$('clearSignature').onclick=clearSignature;
+signatureDialog.addEventListener('close',clearSignature);
+signatureCanvas.addEventListener('pointerdown',e=>{if(signaturePointer!==null||e.button!==0)return;e.preventDefault();signaturePointer=e.pointerId;signatureCanvas.setPointerCapture(e.pointerId);const p=signaturePoint(e);signatureContext.strokeStyle='#10234d';signatureContext.fillStyle='#10234d';signatureContext.lineWidth=5;signatureContext.lineCap='round';signatureContext.lineJoin='round';signatureContext.beginPath();signatureContext.arc(p.x,p.y,2.5,0,Math.PI*2);signatureContext.fill();signatureContext.beginPath();signatureContext.moveTo(p.x,p.y);signatureHasInk=true;$('saveSignature').disabled=false});
+signatureCanvas.addEventListener('pointermove',e=>{if(signaturePointer!==e.pointerId)return;e.preventDefault();const p=signaturePoint(e);signatureContext.lineTo(p.x,p.y);signatureContext.stroke()});
+function endSignature(e){if(e.pointerId!==signaturePointer)return;if(signatureCanvas.hasPointerCapture(e.pointerId))signatureCanvas.releasePointerCapture(e.pointerId);signaturePointer=null}
+for(const event of ['pointerup','pointercancel','lostpointercapture'])signatureCanvas.addEventListener(event,endSignature);
+$('saveSignature').onclick=()=>{if(!signatureHasInk)return;$('saveSignature').disabled=true;record('confirmed');signatureDialog.close()};

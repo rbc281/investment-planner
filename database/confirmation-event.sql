@@ -1,0 +1,2 @@
+alter table public.planner_events drop constraint planner_events_action_check;
+alter table public.planner_events add constraint planner_events_action_check check (action in ('presented','applied','removed','updated','confirmed'));

@@ -4,7 +4,7 @@ create table public.planner_events (
  session_id uuid not null,
  customer_label text not null check (char_length(customer_label) between 1 and 80),
  rep_name text not null check (char_length(rep_name) between 1 and 80),
- action text not null check(action in ('presented','applied','removed','updated')),
+ action text not null check(action in ('presented','applied','removed','updated','confirmed')),
  discount_key text not null default '' check(discount_key in ('','standard0','standard1','standard2','dollars','percent')),
  discount_label text not null default '' check(char_length(discount_label)<=80),
  value numeric not null default 0 check(value>=0 and value<=10000000),
