@@ -55,3 +55,25 @@ signatureCanvas.addEventListener('pointermove',e=>{if(signaturePointer!==e.point
 function endSignature(e){if(e.pointerId!==signaturePointer)return;if(signatureCanvas.hasPointerCapture(e.pointerId))signatureCanvas.releasePointerCapture(e.pointerId);signaturePointer=null}
 for(const event of ['pointerup','pointercancel','lostpointercapture'])signatureCanvas.addEventListener(event,endSignature);
 $('saveSignature').onclick=()=>{if(!signatureHasInk||signatureSaving)return;signatureSaving=true;$('saveSignature').disabled=true;record('confirmed');const feedback=document.createElement('div');feedback.className='signature-success';feedback.setAttribute('role','status');feedback.setAttribute('aria-label','Saved');const check=document.createElement('span');check.className='signature-success-check';check.textContent='✓';check.setAttribute('aria-hidden','true');feedback.append(check);signatureDialog.append(feedback);signatureDialog.classList.add('signature-saved');signatureFadeTimer=setTimeout(()=>signatureDialog.classList.add('signature-fading'),800);signatureCloseTimer=setTimeout(()=>signatureDialog.close(),1200)};
+
+const payoffDialog=$('payoffDialog');let payoffSession=null;
+function payoffDuration(months){if(months===null)return 'Not paid off';if(months===0)return 'Paid in full';const years=Math.floor(months/12),rest=months%12;return [years?years+' year'+(years===1?'':'s'):'',rest?rest+' month'+(rest===1?'':'s'):''].filter(Boolean).join(', ')}
+function payoffValues(){return ['extraMonthly','extraAnnual'].map(id=>{const raw=$(id).value.trim();return raw===''?0:parseAmount(raw)})}
+function updatePayoff(){
+ const n=numbers(),payment=n.payment*100;const [monthly,annual]=payoffValues();
+ $('payoffStarting').textContent='$'+n.payment.toLocaleString('en-US');
+ const valid=[monthly,annual].every(v=>Number.isFinite(v)&&v>=0&&v<=10000000);
+ if(!valid){$('payoffError').textContent='Enter an extra payment from $0 to $10,000,000.';for(const id of ['payoffTime','payoffSavings','payoffBaseTime','payoffExtraTime','payoffContribution'])$(id).textContent='—';$('payoffTimeSaved').textContent='';$('payoffExtraBar').style.width='0%';return}
+ $('payoffError').textContent='';
+ const base=simulatePayoff(n.balance,payment),extra=simulatePayoff(n.balance,payment,Math.round(monthly*100),Math.round(annual*100));
+ $('payoffContribution').textContent=money(payment+Math.round(monthly*100));
+ $('payoffTime').textContent=payoffDuration(extra.months);$('payoffBaseTime').textContent=payoffDuration(base.months);$('payoffExtraTime').textContent=payoffDuration(extra.months);
+ $('payoffSavings').textContent=base.interest===null||extra.interest===null?'—':money(Math.max(0,base.interest-extra.interest));
+ const saved=base.months!==null&&extra.months!==null?Math.max(0,base.months-extra.months):0;
+ $('payoffTimeSaved').textContent=saved?payoffDuration(saved)+' sooner':'';
+ $('payoffExtraBar').style.width=(base.months?Math.min(100,extra.months/base.months*100):0)+'%';
+}
+$('openPayoff').onclick=e=>{e.stopPropagation();if(payoffSession!==state.sessionId){$('extraMonthly').value='';$('extraAnnual').value='';$('extraMonthlySlider').value='0';payoffSession=state.sessionId}updatePayoff();payoffDialog.showModal()};
+$('closePayoff').onclick=$('donePayoff').onclick=()=>payoffDialog.close();
+for(const id of ['extraMonthly','extraAnnual']){$(id).addEventListener('input',()=>{if(id==='extraMonthly'){const v=payoffValues()[0];if(Number.isFinite(v)&&v>=0){$('extraMonthlySlider').max=String(Math.max(500,Math.ceil(v/100)*100));$('extraMonthlySlider').value=String(v)}}updatePayoff()});$(id).addEventListener('blur',()=>{const v=parseAmount($(id).value);if(Number.isFinite(v)&&v>=0&&v<=10000000)$(id).value=v?v.toLocaleString('en-US',{maximumFractionDigits:2}):''})}
+$('extraMonthlySlider').addEventListener('input',()=>{$('extraMonthly').value=Number($('extraMonthlySlider').value).toLocaleString('en-US');updatePayoff()});

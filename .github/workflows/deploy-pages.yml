@@ -28,6 +28,7 @@ jobs:
         run: |
           node test.cjs
           node activity-test.cjs
+          node payoff-test.cjs
           python3 make-offline.py
 
       - name: Configure Pages
