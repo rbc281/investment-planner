@@ -46,7 +46,7 @@ let signaturePointer=null,signatureHasInk=false,signatureSaving=false,signatureF
 function resetSignatureFeedback(){clearTimeout(signatureFadeTimer);clearTimeout(signatureCloseTimer);signatureSaving=false;signatureDialog.classList.remove('signature-saved','signature-fading');signatureDialog.querySelector('.signature-success')?.remove()}
 function clearSignature(){signatureContext.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);signaturePointer=null;signatureHasInk=false;$('saveSignature').disabled=true;$('signatureError').textContent=''}
 function signaturePoint(e){const r=signatureCanvas.getBoundingClientRect();return{x:(e.clientX-r.left)*signatureCanvas.width/r.width,y:(e.clientY-r.top)*signatureCanvas.height/r.height}}
-$('confirmInvestment').onclick=()=>{clearSignature();$('signatureCustomer').textContent=state.customer;signatureDialog.showModal()};
+$('confirmInvestment').onclick=()=>{clearSignature();signatureDialog.showModal()};
 $('closeSignature').onclick=()=>signatureDialog.close();
 $('clearSignature').onclick=clearSignature;
 signatureDialog.addEventListener('close',()=>{resetSignatureFeedback();clearSignature()});
@@ -63,14 +63,13 @@ function updatePayoff(){
  const n=numbers(),payment=n.payment*100;const [monthly,annual]=payoffValues();
  $('payoffStarting').textContent='$'+n.payment.toLocaleString('en-US');
  const valid=[monthly,annual].every(v=>Number.isFinite(v)&&v>=0&&v<=10000000);
- if(!valid){$('payoffError').textContent='Enter an extra payment from $0 to $10,000,000.';for(const id of ['payoffTime','payoffSavings','payoffBaseTime','payoffExtraTime','payoffContribution'])$(id).textContent='—';$('payoffTimeSaved').textContent='';$('payoffExtraBar').style.width='0%';return}
+ if(!valid){$('payoffError').textContent='Enter an extra payment from $0 to $10,000,000.';for(const id of ['payoffTime','payoffTimeSaved','payoffBaseTime','payoffExtraTime','payoffContribution'])$(id).textContent='—';$('payoffExtraBar').style.width='0%';return}
  $('payoffError').textContent='';
  const base=simulatePayoff(n.balance,payment),extra=simulatePayoff(n.balance,payment,Math.round(monthly*100),Math.round(annual*100));
  $('payoffContribution').textContent=money(payment+Math.round(monthly*100));
  $('payoffTime').textContent=payoffDuration(extra.months);$('payoffBaseTime').textContent=payoffDuration(base.months);$('payoffExtraTime').textContent=payoffDuration(extra.months);
- $('payoffSavings').textContent=base.interest===null||extra.interest===null?'—':money(Math.max(0,base.interest-extra.interest));
  const saved=base.months!==null&&extra.months!==null?Math.max(0,base.months-extra.months):0;
- $('payoffTimeSaved').textContent=saved?payoffDuration(saved)+' sooner':'';
+ $('payoffTimeSaved').textContent=saved?payoffDuration(saved):'0 months';
  $('payoffExtraBar').style.width=(base.months?Math.min(100,extra.months/base.months*100):0)+'%';
 }
 $('openPayoff').onclick=e=>{e.stopPropagation();if(payoffSession!==state.sessionId){$('extraMonthly').value='';$('extraAnnual').value='';$('extraMonthlySlider').value='0';payoffSession=state.sessionId}updatePayoff();payoffDialog.showModal()};
