@@ -26,12 +26,13 @@ $('customRows').replaceChildren();for(const [kind,i] of [['dollars',3],['percent
 $('investment').hidden=state.screen!=='investment';$('payment').hidden=state.screen!=='payment';$('navInvestment').classList.toggle('active',state.screen==='investment');$('navPayment').classList.toggle('active',state.screen==='payment');document.querySelectorAll('.card').forEach(c=>{const stage=state.tileStages[c.dataset.plan];const selected=stage===2;c.classList.toggle('selected',selected);c.classList.toggle('expanded',stage>0);c.setAttribute('aria-pressed',String(selected));c.setAttribute('aria-expanded',String(stage>0));c.querySelector('.card-details').hidden=stage===0})}
 function screen(s){closeDiscounts();state.screen=s;render();window.scrollTo({top:0,behavior:'smooth'})}
 function openSetup(fresh=false){$('identityFields').hidden=hasProject;$('repFields').hidden=hasProject;$('customerInput').required=!hasProject;$('repInput').required=!hasProject;$('customerInput').value=hasProject?state.customer:'';try{$('repInput').value=state.rep||localStorage.getItem('planner-rep')||''}catch{$('repInput').value=state.rep||''}$('retailInput').value=fresh?'':(state.retail/100||'').toLocaleString('en-US');$('cancelSetup').hidden=!hasProject;$('setupError').textContent='';setup.showModal();$(hasProject?'retailInput':'customerInput').focus()}
-$('setupForm').onsubmit=e=>{e.preventDefault();const amount=parseAmount($('retailInput').value);if(!Number.isFinite(amount)||amount<=0||amount>10000000){$('setupError').textContent='Enter a price greater than $0 and no more than $10,000,000.';return}const candidate=Math.round(amount*100);if(numbers(candidate).savings>candidate){$('setupError').textContent='Reduce additional savings before lowering the retail price.';return}const first=!hasProject;if(first){const customer=$('customerInput').value.trim(),rep=$('repInput').value.trim();if(!customer||!rep){$('setupError').textContent='Enter a customer name and sales rep name.';return}state.sessionId=Activity.uid();state.customer=Activity.shorten(customer);state.rep=rep;try{localStorage.setItem('planner-rep',rep)}catch{}$('customerInput').value=state.customer}state.retail=candidate;hasProject=true;if(first)record('presented');setup.close();render()};setup.addEventListener('cancel',e=>{if(!hasProject)e.preventDefault()});$('cancelSetup').onclick=()=>setup.close();$('editRetail').onclick=()=>openSetup();
+$('setupForm').onsubmit=e=>{e.preventDefault();const amount=parseAmount($('retailInput').value);if(!Number.isFinite(amount)||amount<=0||amount>10000000){$('setupError').textContent='Enter a price greater than $0 and no more than $10,000,000.';return}const candidate=Math.round(amount*100);if(numbers(candidate).savings>candidate){$('setupError').textContent='Reduce additional savings before lowering the retail price.';return}const first=!hasProject;if(first){const customer=$('customerInput').value.trim(),rep=$('repInput').value.trim();if(!customer||!rep){$('setupError').textContent='Enter a customer name and sales rep name.';return}state.sessionId=Activity.uid();state.customer=Activity.shorten(customer);state.rep=rep;try{localStorage.setItem('planner-rep',rep)}catch{}$('customerInput').value=state.customer}state.retail=candidate;hasProject=true;if(first){state.lastActivityAt=Date.now();record('presented');}setup.close();render();checkPresentationIdle()};setup.addEventListener('cancel',e=>{if(!hasProject)e.preventDefault()});$('cancelSetup').onclick=()=>setup.close();$('editRetail').onclick=()=>openSetup();
 $('next').onclick=()=>screen('payment');$('back').onclick=()=>screen('investment');$('navPayment').onclick=()=>screen('payment');$('navInvestment').onclick=()=>screen('investment');document.querySelectorAll('.card').forEach(c=>c.onclick=()=>{const next=cycleTile(state.tileStages,c.dataset.plan);state.tileStages=next.stages;state.plan=next.plan;render()});
 $('deposit').addEventListener('input',()=>{const raw=$('deposit').value;const v=raw.trim()===''?0:parseAmount(raw);const total=numbers().total;if(!Number.isFinite(v)||v<0||Math.round(v*100)>total){$('depositError').textContent='Enter a down payment between $0 and '+money(total)+'.';return}$('depositError').textContent='';state.deposit=Math.round(v*100);totals()});$('deposit').addEventListener('blur',()=>{$('deposit').value=state.deposit?(state.deposit/100).toLocaleString('en-US',{maximumFractionDigits:2}):'';$('depositError').textContent=''});
 function openAdjust(){closeDiscounts();$('discountSettings').replaceChildren();state.names.forEach((name,i)=>{const row=document.createElement('label');row.className='rename-row';const caption=document.createElement('span');caption.textContent=defaults[i]+(i<3?' · '+[10,5,10][i]+'% off':'');const input=document.createElement('input');input.type='text';input.value=name;input.id='name'+i;input.maxLength=40;input.setAttribute('aria-label','Rename '+defaults[i]);row.append(caption,input);$('discountSettings').append(row)});adjust.showModal()}
 $('settings').onclick=openAdjust;$('closeAdjust').onclick=()=>adjust.close();$('adjustForm').onsubmit=e=>{e.preventDefault();state.names=defaults.map((name,i)=>$('name'+i).value.trim()||name);adjust.close();render()};
-$('reset').onclick=()=>{if(!confirm('Start a new presentation and clear these amounts?'))return;state={...state,retail:0,applied:[false,false,false],custom:{dollars:{active:false,value:0},percent:{active:false,value:0}},deposit:0,plan:null,tileStages:{cash:0,monthly:0,promo:0},screen:'investment',sessionId:null,customer:'',rep:''};hasProject=false;try{sessionStorage.removeItem('planner-presentation-v2')}catch{}$('deposit').value='';$('depositError').textContent='';$('discountError').textContent='';closeDiscounts();render();openSetup(true)};
+function startNewPresentation(){state={...state,retail:0,applied:[false,false,false],custom:{dollars:{active:false,value:0},percent:{active:false,value:0}},deposit:0,plan:null,tileStages:{cash:0,monthly:0,promo:0},screen:'investment',sessionId:null,customer:'',rep:''};hasProject=false;try{sessionStorage.removeItem('planner-presentation-v2')}catch{}$('deposit').value='';$('depositError').textContent='';$('discountError').textContent='';closeDiscounts();render();openSetup(true)}
+$('reset').onclick=()=>{if(confirm('Start a new presentation and clear these amounts?'))startNewPresentation()};
 $('retailInput').addEventListener('input',e=>{const input=e.target;const raw=input.value.replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const before=input.value.slice(0,input.selectionStart).replace(/,/g,'').length;const parts=raw.split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');input.value=parts.join('.');let pos=0,count=0;while(pos<input.value.length&&count<before){if(input.value[pos]!==',')count++;pos++}input.setSelectionRange(pos,pos)});
 function toggleDiscount(i){const next=[...state.applied];next[i]=!next[i];if(numbers(state.retail,next).savings>state.retail){$('discountError').textContent='Reduce additional savings before applying this discount.';return}$('discountError').textContent='';state.applied=next;record(next[i]?'applied':'removed','standard'+i,[10,5,10][i]);render()}
 $('discountTrigger').onclick=()=>{const open=$('discountPopover').hidden;$('discountPopover').hidden=!open;$('discountTrigger').setAttribute('aria-expanded',String(open))};$('closeDiscounts').onclick=closeDiscounts;document.addEventListener('click',e=>{if(!e.target.closest('.discount-anchor'))closeDiscounts()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('discountPopover').hidden){closeDiscounts();$('discountTrigger').focus()}});
@@ -76,3 +77,63 @@ $('openPayoff').onclick=e=>{e.stopPropagation();if(payoffSession!==state.session
 $('closePayoff').onclick=$('donePayoff').onclick=()=>payoffDialog.close();
 for(const id of ['extraMonthly','extraAnnual']){$(id).addEventListener('input',()=>{if(id==='extraMonthly'){const v=payoffValues()[0];if(Number.isFinite(v)&&v>=0){$('extraMonthlySlider').max=String(Math.max(500,Math.ceil(v/100)*100));$('extraMonthlySlider').value=String(v)}}updatePayoff()});$(id).addEventListener('blur',()=>{const v=parseAmount($(id).value);if(Number.isFinite(v)&&v>=0&&v<=10000000)$(id).value=v?v.toLocaleString('en-US',{maximumFractionDigits:2}):''})}
 $('extraMonthlySlider').addEventListener('input',()=>{$('extraMonthly').value=Number($('extraMonthlySlider').value).toLocaleString('en-US');updatePayoff()});
+
+const idleLimit = 60 * 60 * 1000;
+const idlePrompt = document.createElement('dialog');
+idlePrompt.setAttribute('aria-labelledby', 'idlePromptTitle');
+idlePrompt.innerHTML = '<h2 id="idlePromptTitle"></h2><div class="signature-actions"><button type="button" class="text-button">Start New Customer</button><button type="button" class="solid" autofocus></button></div>';
+document.body.append(idlePrompt);
+const idleTitle = idlePrompt.querySelector('h2');
+const [startCustomer, continueCustomer] = idlePrompt.querySelectorAll('button');
+let idleTimer;
+
+function notePresentationActivity() {
+  if (!hasProject) return;
+  state.lastActivityAt = Date.now();
+  persist();
+  checkPresentationIdle();
+}
+
+function checkPresentationIdle() {
+  clearTimeout(idleTimer);
+  if (!hasProject || idlePrompt.open || document.hidden) return;
+  if (!Number.isFinite(state.lastActivityAt)) {
+    notePresentationActivity();
+    return;
+  }
+  const remaining = idleLimit - (Date.now() - state.lastActivityAt);
+  if (remaining > 0) {
+    idleTimer = setTimeout(checkPresentationIdle, remaining);
+    return;
+  }
+  idleTitle.textContent = 'Still working with ' + state.customer + '?';
+  continueCustomer.textContent = 'Continue with ' + state.customer;
+  idlePrompt.showModal();
+}
+
+idlePrompt.addEventListener('cancel', event => event.preventDefault());
+continueCustomer.onclick = () => {
+  idlePrompt.close();
+  notePresentationActivity();
+};
+startCustomer.onclick = () => {
+  idlePrompt.close();
+  for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
+  startNewPresentation();
+};
+
+for (const type of ['pointerdown', 'keydown', 'input', 'click']) {
+  document.addEventListener(type, event => {
+    if (idlePrompt.open || !hasProject) return;
+    checkPresentationIdle();
+    if (idlePrompt.open) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    notePresentationActivity();
+  }, true);
+}
+document.addEventListener('visibilitychange', checkPresentationIdle);
+window.addEventListener('pageshow', checkPresentationIdle);
+checkPresentationIdle();
