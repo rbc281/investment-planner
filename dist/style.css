@@ -32,3 +32,10 @@ html{-webkit-text-size-adjust:100%}button,a,input,select{touch-action:manipulati
 
 /* Champagne savings badge in the investment summary only. */
 .summary .savings{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 14px}.summary .savings>span{font-weight:400}.summary .savings>strong{display:inline-block;background:#e8d5ac;color:#10234d;border-radius:999px;padding:8px 18px;font-size:1.3em;line-height:1.2;white-space:nowrap}
+
+/* Emphasize payment-screen savings while retaining the single-line row. */
+.payment-breakdown .price-context{max-width:none}
+.payment-breakdown .price-context>div:has(#paymentSavings){align-items:center;gap:10px}
+.payment-breakdown .price-context>div:has(#paymentSavings)>span{font-size:clamp(14px,1.3vw,18px);white-space:nowrap}
+#paymentSavings{font-size:clamp(36px,4.65vw,63px);line-height:1.12;letter-spacing:-1.5px}
+@media(max-width:650px){#paymentSavings{font-size:clamp(31.5px,7.5vw,48px)}}
