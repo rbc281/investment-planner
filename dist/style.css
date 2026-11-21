@@ -39,3 +39,5 @@ html{-webkit-text-size-adjust:100%}button,a,input,select{touch-action:manipulati
 .payment-breakdown .price-context>div:has(#paymentSavings)>span{font-size:clamp(14px,1.3vw,18px);white-space:nowrap}
 #paymentSavings{font-size:clamp(36px,4.65vw,63px);line-height:1.12;letter-spacing:-1.5px}
 @media(max-width:650px){#paymentSavings{font-size:clamp(31.5px,7.5vw,48px)}}
+
+.promotion-divider{height:1px;background:#8da1bd55;margin:10px 0}.discount-popover{max-height:75svh;overflow-y:auto}
