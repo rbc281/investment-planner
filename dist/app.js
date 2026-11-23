@@ -7,7 +7,7 @@ function cycleTile(current,key){const stages={...current};stages[key]=(stages[ke
 const defaults=['50% Off Installation','Initial Consultation Offer','Local Discount','$ off project','% off project','Black Friday: Free Gutters','Black Friday: Free Doors/Accessories','Black Friday: BOGO Bath'];
 const promotionKinds=['gutters','doors','bath'];
 const customEntries=[['gutters',5],['doors',6],['bath',7],['dollars',3],['percent',4]];
-const promotionEnds=Date.parse('2026-11-30T00:00:00-08:00');
+const promotionEnds=Date.parse('2026-12-01T00:00:00-08:00');
 const promotionsAvailable=()=>Date.now()<promotionEnds;
 let state={retail:0,applied:[false,false,false],names:[...defaults],custom:{dollars:{active:false,value:0},percent:{active:false,value:0}},deposit:0,plan:null,tileStages:{cash:0,monthly:0,promo:0},screen:'investment',sessionId:null,customer:'',customerFullName:null,rep:''};
 const setup=$('setup'),adjust=$('adjust');let hasProject=false;

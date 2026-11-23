@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const version='cash24-20261123';
+ const version='bf-expiry-20261130';
  if(location.protocol==='file:')return;
  const dialog=document.createElement('dialog');
  dialog.setAttribute('aria-labelledby','updateTitle');
