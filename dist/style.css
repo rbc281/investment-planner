@@ -41,3 +41,18 @@ html{-webkit-text-size-adjust:100%}button,a,input,select{touch-action:manipulati
 @media(max-width:650px){#paymentSavings{font-size:clamp(31.5px,7.5vw,48px)}}
 
 .promotion-divider{height:1px;background:#8da1bd55;margin:10px 0}.discount-popover{max-height:75svh;overflow-y:auto}
+
+/* Same as Cash term switch; arrows sit outside the expanded tile. */
+.cash-promo-shell{position:relative;min-width:0}
+.cash-promo-shell>.card{width:100%;overflow:hidden}
+.cash-content{width:100%;min-width:0;position:relative}
+.cash-special{height:18px;margin-top:-18px;font-size:12px;line-height:16px;font-weight:700;color:var(--red);visibility:hidden}
+.cash-promo-shell.is-24 .cash-special{visibility:visible}
+.cash-term-arrow{position:absolute;left:50%;bottom:-42px;transform:translateX(-50%);width:44px;height:40px;background:transparent;color:var(--navy);display:grid;place-items:center;z-index:2}
+.cash-term-arrow span{width:14px;height:14px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);font-size:0;margin-top:-8px}
+.cash-promo-shell.is-24 .cash-term-arrow{bottom:auto;top:-30px;height:28px}
+.cash-promo-shell.is-24 .cash-term-arrow span{transform:rotate(225deg);margin-top:8px}
+.cash-promo-shell .card.expanded{touch-action:pan-x}
+.cash-promo-shell.switching .card{pointer-events:none}
+.cash-outgoing{position:absolute;pointer-events:none}
+.cash-promo-shell:has(.cash-term-arrow:not([hidden])){margin-bottom:16px}
